@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>keyboardGame</title>
+    <style>
+        *{
+            margin: 0;
+            height: 0;
+        }
+
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+
+        .top{
+            width: 100%;
+            height: 550px;
+            position: relative;
+            background-color: #ddfff8;
+        }
+
+        .top .health{
+            width: 110px;
+            height: 45px;
+            background-color: rgba(135, 206, 250, 0.51);
+            border: 1px solid lightblue;
+            border-radius: 5px;
+            padding-left: 10px;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            color: white;
+            font-size: 20px;
+            text-align: left;
+            line-height: 40px;
+        }
+
+        .top .score{
+            width: 110px;
+            height: 45px;
+            background-color: rgba(135, 206, 250, 0.51);
+            border: 1px solid lightblue;
+            border-radius: 5px;
+            padding-left: 10px;
+            position: absolute;
+            top: 100px;
+            left: 50px;
+            color: white;
+            font-size: 20px;
+            text-align: left;
+            line-height: 40px;
+        }
+
+        .bottom{
+            width: 100%;
+            height: 230px;
+            background-color: #fff4cb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .start{
+            width: 80px;
+            height: 50px;
+            background-color: rgba(219, 102, 63, 0.51);
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            line-height: 50px;
+        }
+
+        .restart{
+            width: 80px;
+            height: 50px;
+            background-color: rgba(82, 128, 219, 0.51);
+            border-radius: 10px;
+            margin-top: 20px;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            line-height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top">
+    <div class="health">
+        生命：<span>10</span>
+    </div>
+    <div class="score">
+        分数：<span>0</span>
+    </div>
+</div>
+<div class="bottom">
+    <div class="start">start</div>
+    <div class="restart">restart</div>
+</div>
+
+</body>
+</html>
+<script>
+    /*
+    * 属性
+    *
+    *   字符  个数  速度  分数
+    *
+    * 方法
+    *
+    *   产生  掉落  匹配  下一关 重新开始
+    * */
+
+    function Game() {
+        this.UI = document.querySelector('.top');
+        this.maxH = this.UI.offsetHeight;
+        this.chars = [{value: 'Q',url: 'img/Q.PNG'},
+                      {value: 'W',url: 'img/W.PNG'},
+                      {value: 'E',url: 'img/E.PNG'},
+                      {value: 'R',url: 'img/R.PNG'},
+                      {value: 'T',url: 'img/T.PNG'},
+                      {value: 'Y',url: 'img/Y.PNG'},
+                      {value: 'U',url: 'img/U.PNG'},
+                      {value: 'I',url: 'img/I.PNG'},
+                      {value: 'O',url: 'img/O.PNG'},
+                      {value: 'P',url: 'img/P.PNG'},
+                      {value: 'A',url: 'img/A.PNG'},
+                      {value: 'S',url: 'img/S.PNG'},
+                      {value: 'D',url: 'img/D.PNG'},
+                      {value: 'F',url: 'img/F.PNG'},
+                      {value: 'G',url: 'img/G.PNG'},
+                      {value: 'H',url: 'img/H.PNG'},
+                      {value: 'J',url: 'img/J.PNG'},
+                      {value: 'K',url: 'img/K.PNG'},
+                      {value: 'L',url: 'img/L.PNG'},
+                      {value: 'Z',url: 'img/Z.PNG'},
+                      {value: 'X',url: 'img/X.PNG'},
+                      {value: 'C',url: 'img/C.PNG'},
+                      {value: 'V',url: 'img/V.PNG'},
+                      {value: 'B',url: 'img/B.PNG'},
+                      {value: 'N',url: 'img/N.PNG'},
+                      {value: 'M',url: 'img/M.PNG'}];
+        this.length = 5;
+        this.speed = 3;
+        this.t;
+        this.mission = 10;
+
+        //视图 数据 要统一
+        this.health = 10;
+        this.healthElement = document.querySelector('.health span');
+        this.score = 0;
+        this.scoreElement = document.querySelector('.score span');;
+
+        this.elementarr = [];
+        this.elementposition = [];
+    }
+
+    Game.prototype = {
+        getChars: function () {
+            for (let i=0; i<this.length; i++) {
+                this.getChar();
+            }
+        },
+        getChar: function () {
+            let divs = document.createElement('div');
+            let tops = Math.random() * 100 + 20;
+            let colors = this.randomColor();
+            let index = 0;
+            let lefts = 0;
+
+            do {
+                index = Math.floor(Math.random() * this.chars.length);
+            } while (this.checkIndex(this.elementarr,this.chars[index].value))
+
+            do {
+                lefts = Math.random() * (innerWidth - 400) + 200;
+            } while (this.checkPosition(this.elementposition,lefts))
+
+            divs.style.cssText = `width: 60px;
+                                  height: 40px;
+                                  background: url('${this.chars[index].url}') center / 100% ;
+                                  background-color: ${colors};
+                                  border-radius: 10px;
+                                  border: 2px solid rgba(147, 112, 219, 1);
+                                  position: absolute;
+                                  top: ${tops}px;
+                                  left: ${lefts}px;
+                                  color: white;
+                                  font-size: 0px;
+                                  text-align: center;
+                                  line-height: 40px;`;
+
+            divs.innerText = this.chars[index].value;
+            this.UI.appendChild(divs);
+            this.elementarr.push(divs);
+            this.elementposition.push(lefts);
+        },
+        randomColor: function(){
+            let str = 'rgba(';
+            for (let i=0; i<3; i++) {
+                str += Math.random() * 255 + ',';
+            }
+            str = str + '0.65)';
+            return str;
+        },
+        checkIndex: function (arr,value) {
+            let flag = arr.some(function (ele) {
+                return ele.innerText == value;
+            })
+            return flag;
+        },
+        checkPosition: function (arr,value) {
+            let flag = arr.some(function (ele) {
+                return Math.abs(ele - value) < 60;
+            })
+            return flag;
+        },
+        drop: function () {
+            let that = this;
+            this.t = setInterval(move,200);
+
+            function move() {
+                for (let i=0; i<that.elementarr.length; i++) {
+                    let tops = that.elementarr[i].offsetTop + that.speed;
+                    that.elementarr[i].style.top = tops + 'px';
+
+                    if (tops >= that.maxH - 40) {
+                        that.UI.removeChild(that.elementarr[i]);
+                        that.elementarr.splice(i,1);
+                        that.elementposition.splice(i,1);
+                        that.health--;
+                        that.healthElement.innerText = that.health;
+                        that.getChar();
+                    }
+                }
+                if (that.health == 0) {
+                    that.over();
+                }
+            }
+        },
+        key:function () {
+            /*
+            * e.key  e.keyCode
+            *  a A       65
+            * innerText
+            *     A
+            * */
+            document.onkeydown = function (e) {
+                for (let i=0; i<this.length; i++) {
+                    if (String.fromCharCode(e.keyCode) == this.elementarr[i].innerText) {
+                        this.UI.removeChild(this.elementarr[i]);
+                        this.elementarr.splice(i,1);
+                        this.elementposition.splice(i,1);
+                        this.getChar();
+                        this.score++;
+                        this.scoreElement.innerText = this.score;
+                    }
+                    if (this.score == this.mission) {
+                        this.next();
+                    }
+                }
+            }.bind(this)   //bind(this)  绑定外层环境的this
+        },
+        start: function () {
+            this.getChars();
+            this.drop();
+            this.key();
+        },
+        next: function () {
+            this.pause();
+
+            if (this.mission >0 && this.mission <= 20) {
+                this.speed += 3;
+                this.mission += 10;
+            }else if (this.mission > 20 && this.mission <= 40) {
+                this.length +=1;
+                this.mission += 10;
+            }else if (this.mission > 40 && this.mission <= 50) {
+                this.speed += 3;
+                this.length += 1;
+                this.mission += 10;
+            }else {
+                this.speed += 3;
+                this.mission += 10;
+            }
+
+            for (let i=0; i<this.elementarr.length; i++) {
+                this.UI.removeChild(this.elementarr[i]);
+            }
+            this.elementarr = [];
+            this.elementposition = [];
+
+            this.start();
+        },
+        pause: function () {
+            clearInterval(this.t);
+        },
+        restart: function () {
+            this.pause();
+            //初始化
+            this.health = 10;
+            this.score = 0;
+            this.healthElement.innerText = this.health;
+            this.scoreElement.innerText = this.score;
+            this.length = 5;
+            this.speed = 3;
+
+            for (let i=0; i<this.elementarr.length; i++) {
+                this.UI.removeChild(this.elementarr[i]);
+            }
+            this.elementarr = [];
+            this.elementposition = [];
+
+            this.start();
+        },
+        over: function () {
+            this.pause();
+            let flag = confirm(`Game Over!
+             Score：${this.score}
+             Restart？`);
+            if (flag) {
+                this.restart();
+            }else {
+                window.close();
+            }
+        },
+    }
+</script>
+
+<script>
+    let start = document.querySelector('.start');
+    let restart = document.querySelector('.restart');
+    let game = new Game();
+
+    start.onclick = function () {
+        game.start();
+    }
+
+    restart.onclick = function () {
+        game.restart();
+    }
+</script>
